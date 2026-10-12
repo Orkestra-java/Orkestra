@@ -1,0 +1,50 @@
+name: Build
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+          cache-dependency-path: java/**/pom.xml
+      - run: ./mvnw --batch-mode --no-transfer-progress verify
+        working-directory: java
+      - run: python3 scripts/test_check_api.py
+      - run: python3 scripts/check-api.py
+      - run: scripts/run-examples.sh
+  adapters:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+          cache-dependency-path: java/**/pom.xml
+      - run: ./mvnw --batch-mode --no-transfer-progress -Padapters verify
+        working-directory: java
+      - run: python3 scripts/check-api.py --all
+  cold-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - run: scripts/cold-build.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-candidates
+          path: java/**/target/orkestra-*.jar
+          if-no-files-found: error

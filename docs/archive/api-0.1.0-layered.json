@@ -1,0 +1,604 @@
+{
+  "application": {
+    "classes": {
+      "io.orkestra.application.Failures": {
+        "declaration": "public final class io.orkestra.application.Failures {",
+        "members": [
+          "public static java.util.Optional<io.orkestra.domain.execution.FailureDetails> details(java.lang.Throwable);\ndescriptor: (Ljava/lang/Throwable;)Ljava/util/Optional;"
+        ]
+      },
+      "io.orkestra.application.Orchestrator": {
+        "declaration": "public final class io.orkestra.application.Orchestrator implements java.lang.AutoCloseable {",
+        "members": [
+          "public <C, I, O> io.orkestra.domain.execution.Execution<O> perform(io.orkestra.domain.composition.Composition<C, I, O>, C, I) throws java.lang.Exception;\ndescriptor: (Lio/orkestra/domain/composition/Composition;Ljava/lang/Object;Ljava/lang/Object;)Lio/orkestra/domain/execution/Execution;",
+          "public <C, I, O> io.orkestra.domain.execution.Execution<O> perform(io.orkestra.domain.composition.Composition<C, I, O>, C, I, io.orkestra.domain.execution.ExecutionOptions) throws java.lang.Exception;\ndescriptor: (Lio/orkestra/domain/composition/Composition;Ljava/lang/Object;Ljava/lang/Object;Lio/orkestra/domain/execution/ExecutionOptions;)Lio/orkestra/domain/execution/Execution;",
+          "public boolean cancel(java.lang.String);\ndescriptor: (Ljava/lang/String;)Z",
+          "public io.orkestra.application.Orchestrator();\ndescriptor: ()V",
+          "public io.orkestra.domain.execution.ShutdownReport shutdown(java.time.Duration);\ndescriptor: (Ljava/time/Duration;)Lio/orkestra/domain/execution/ShutdownReport;",
+          "public io.orkestra.domain.port.CacheStore cache(java.lang.String);\ndescriptor: (Ljava/lang/String;)Lio/orkestra/domain/port/CacheStore;",
+          "public long eventFailures();\ndescriptor: ()J",
+          "public static io.orkestra.application.Orchestrator$Builder builder();\ndescriptor: ()Lio/orkestra/application/Orchestrator$Builder;",
+          "public void close();\ndescriptor: ()V"
+        ]
+      },
+      "io.orkestra.application.Orchestrator$Builder": {
+        "declaration": "public final class io.orkestra.application.Orchestrator$Builder {",
+        "members": [
+          "public io.orkestra.application.Orchestrator build();\ndescriptor: ()Lio/orkestra/application/Orchestrator;",
+          "public io.orkestra.application.Orchestrator$Builder breaker(java.lang.String, io.orkestra.domain.port.CircuitBreaker);\ndescriptor: (Ljava/lang/String;Lio/orkestra/domain/port/CircuitBreaker;)Lio/orkestra/application/Orchestrator$Builder;",
+          "public io.orkestra.application.Orchestrator$Builder breakerDefaults(int, java.time.Duration);\ndescriptor: (ILjava/time/Duration;)Lio/orkestra/application/Orchestrator$Builder;",
+          "public io.orkestra.application.Orchestrator$Builder cache(java.lang.String, io.orkestra.domain.port.CacheStore);\ndescriptor: (Ljava/lang/String;Lio/orkestra/domain/port/CacheStore;)Lio/orkestra/application/Orchestrator$Builder;",
+          "public io.orkestra.application.Orchestrator$Builder cancellationBudget(java.time.Duration);\ndescriptor: (Ljava/time/Duration;)Lio/orkestra/application/Orchestrator$Builder;",
+          "public io.orkestra.application.Orchestrator$Builder compensationBudget(java.time.Duration);\ndescriptor: (Ljava/time/Duration;)Lio/orkestra/application/Orchestrator$Builder;",
+          "public io.orkestra.application.Orchestrator$Builder events(io.orkestra.domain.port.EventListener);\ndescriptor: (Lio/orkestra/domain/port/EventListener;)Lio/orkestra/application/Orchestrator$Builder;",
+          "public io.orkestra.application.Orchestrator$Builder localCacheCapacity(int);\ndescriptor: (I)Lio/orkestra/application/Orchestrator$Builder;",
+          "public io.orkestra.application.Orchestrator$Builder locks(io.orkestra.domain.port.LockProvider);\ndescriptor: (Lio/orkestra/domain/port/LockProvider;)Lio/orkestra/application/Orchestrator$Builder;",
+          "public io.orkestra.application.Orchestrator$Builder resources(io.orkestra.domain.port.ResourceProvider);\ndescriptor: (Lio/orkestra/domain/port/ResourceProvider;)Lio/orkestra/application/Orchestrator$Builder;",
+          "public io.orkestra.application.Orchestrator$Builder shutdownGrace(java.time.Duration);\ndescriptor: (Ljava/time/Duration;)Lio/orkestra/application/Orchestrator$Builder;",
+          "public io.orkestra.application.Orchestrator$Builder strictEvents(boolean);\ndescriptor: (Z)Lio/orkestra/application/Orchestrator$Builder;",
+          "public io.orkestra.application.Orchestrator$Builder();\ndescriptor: ()V"
+        ]
+      }
+    },
+    "module": [
+      "exports io.orkestra.application",
+      "requires io.orkestra.domain transitive",
+      "requires java.base mandated",
+      "uses io.orkestra.domain.port.ResourceProvider"
+    ]
+  },
+  "domain": {
+    "classes": {
+      "io.orkestra.domain.composition.Composition": {
+        "declaration": "public final class io.orkestra.domain.composition.Composition<C, I, O> {",
+        "members": [
+          "public io.orkestra.domain.composition.Composition<C, I, O> onFailure(io.orkestra.domain.task.FailureHandler<C>);\ndescriptor: (Lio/orkestra/domain/task/FailureHandler;)Lio/orkestra/domain/composition/Composition;",
+          "public io.orkestra.domain.composition.Composition<C, I, O> within(java.time.Duration);\ndescriptor: (Ljava/time/Duration;)Lio/orkestra/domain/composition/Composition;",
+          "public io.orkestra.domain.internal.Node<C> definition();\ndescriptor: ()Lio/orkestra/domain/internal/Node;",
+          "public java.util.Optional<java.lang.String> name();\ndescriptor: ()Ljava/util/Optional;"
+        ]
+      },
+      "io.orkestra.domain.composition.Compositions": {
+        "declaration": "public final class io.orkestra.domain.composition.Compositions {",
+        "members": [
+          "public static <C, I> io.orkestra.domain.composition.Compositions$Builder<C, I, I> create();\ndescriptor: ()Lio/orkestra/domain/composition/Compositions$Builder;"
+        ]
+      },
+      "io.orkestra.domain.composition.Compositions$AfterParallel": {
+        "declaration": "public final class io.orkestra.domain.composition.Compositions$AfterParallel<C, I, Input> {",
+        "members": [
+          "public <O> io.orkestra.domain.composition.Compositions$TaskBuilder<C, I, Input, O> join(io.orkestra.domain.composition.Join<C, O>);\ndescriptor: (Lio/orkestra/domain/composition/Join;)Lio/orkestra/domain/composition/Compositions$TaskBuilder;"
+        ]
+      },
+      "io.orkestra.domain.composition.Compositions$Builder": {
+        "declaration": "public class io.orkestra.domain.composition.Compositions$Builder<C, I, Current> {",
+        "members": [
+          "public <Item, O> io.orkestra.domain.composition.Compositions$TaskBuilder<C, I, Current, java.util.List<O>> forEach(java.util.function.Function<Current, ? extends java.lang.Iterable<Item>>, java.util.function.Function<io.orkestra.domain.composition.Compositions$Builder<C, Item, Item>, ? extends io.orkestra.domain.composition.Compositions$Builder<C, Item, O>>);\ndescriptor: (Ljava/util/function/Function;Ljava/util/function/Function;)Lio/orkestra/domain/composition/Compositions$TaskBuilder;",
+          "public <O> io.orkestra.domain.composition.Compositions$TaskBuilder<C, I, Current, O> perform(io.orkestra.domain.composition.Composition<C, Current, O>);\ndescriptor: (Lio/orkestra/domain/composition/Composition;)Lio/orkestra/domain/composition/Compositions$TaskBuilder;",
+          "public <O> io.orkestra.domain.composition.Compositions$TaskBuilder<C, I, Current, O> perform(io.orkestra.domain.composition.TaskRef<C, Current, O>);\ndescriptor: (Lio/orkestra/domain/composition/TaskRef;)Lio/orkestra/domain/composition/Compositions$TaskBuilder;",
+          "public <O> io.orkestra.domain.composition.Compositions$TaskBuilder<C, I, Current, O> perform(io.orkestra.domain.task.Task<C, Current, O>);\ndescriptor: (Lio/orkestra/domain/task/Task;)Lio/orkestra/domain/composition/Compositions$TaskBuilder;",
+          "public <O> io.orkestra.domain.composition.Compositions$TaskBuilder<C, I, Current, O> situation(java.util.function.Function<io.orkestra.domain.composition.Situation<C, Current, O>, io.orkestra.domain.composition.Situation<C, Current, O>>);\ndescriptor: (Ljava/util/function/Function;)Lio/orkestra/domain/composition/Compositions$TaskBuilder;",
+          "public <O> io.orkestra.domain.composition.Compositions$TaskBuilder<C, I, Current, O> withCompensation(java.util.function.Function<io.orkestra.domain.composition.Compositions$Builder<C, Current, Current>, ? extends io.orkestra.domain.composition.Compositions$Builder<C, Current, O>>);\ndescriptor: (Ljava/util/function/Function;)Lio/orkestra/domain/composition/Compositions$TaskBuilder;",
+          "public io.orkestra.domain.composition.Composition<C, I, Current> build();\ndescriptor: ()Lio/orkestra/domain/composition/Composition;",
+          "public io.orkestra.domain.composition.Compositions$AfterParallel<C, I, Current> parallel(java.util.function.Consumer<io.orkestra.domain.composition.Compositions$ParallelGroup<C, Current>>);\ndescriptor: (Ljava/util/function/Consumer;)Lio/orkestra/domain/composition/Compositions$AfterParallel;",
+          "public io.orkestra.domain.composition.Compositions$Builder<C, I, Current> concurrently(int);\ndescriptor: (I)Lio/orkestra/domain/composition/Compositions$Builder;",
+          "public io.orkestra.domain.composition.Compositions$Builder<C, I, Current> named(java.lang.String);\ndescriptor: (Ljava/lang/String;)Lio/orkestra/domain/composition/Compositions$Builder;",
+          "public io.orkestra.domain.composition.Compositions$Builder<C, I, Current> onFailure(io.orkestra.domain.task.FailureHandler<C>);\ndescriptor: (Lio/orkestra/domain/task/FailureHandler;)Lio/orkestra/domain/composition/Compositions$Builder;",
+          "public io.orkestra.domain.composition.Compositions$Builder<C, I, Current> within(java.time.Duration);\ndescriptor: (Ljava/time/Duration;)Lio/orkestra/domain/composition/Compositions$Builder;",
+          "public io.orkestra.domain.composition.Compositions$TaskBuilder<C, I, Current, Current> require(io.orkestra.domain.task.Condition<C, Current>);\ndescriptor: (Lio/orkestra/domain/task/Condition;)Lio/orkestra/domain/composition/Compositions$TaskBuilder;",
+          "public io.orkestra.domain.composition.Compositions$TaskBuilder<C, I, Current, Current> require(io.orkestra.domain.task.Condition<C, Current>, java.util.function.Supplier<? extends java.lang.Exception>);\ndescriptor: (Lio/orkestra/domain/task/Condition;Ljava/util/function/Supplier;)Lio/orkestra/domain/composition/Compositions$TaskBuilder;",
+          "public io.orkestra.domain.composition.Compositions$TaskBuilder<C, I, Current, Current> waitFor(java.time.Duration);\ndescriptor: (Ljava/time/Duration;)Lio/orkestra/domain/composition/Compositions$TaskBuilder;"
+        ]
+      },
+      "io.orkestra.domain.composition.Compositions$ParallelGroup": {
+        "declaration": "public final class io.orkestra.domain.composition.Compositions$ParallelGroup<C, I> {",
+        "members": [
+          "public <O> io.orkestra.domain.composition.Compositions$ParallelGroup<C, I> perform(io.orkestra.domain.composition.Composition<C, I, O>);\ndescriptor: (Lio/orkestra/domain/composition/Composition;)Lio/orkestra/domain/composition/Compositions$ParallelGroup;",
+          "public <O> io.orkestra.domain.composition.Compositions$ParallelGroup<C, I> perform(io.orkestra.domain.composition.TaskRef<C, I, O>);\ndescriptor: (Lio/orkestra/domain/composition/TaskRef;)Lio/orkestra/domain/composition/Compositions$ParallelGroup;",
+          "public <O> io.orkestra.domain.composition.Compositions$ParallelGroup<C, I> perform(io.orkestra.domain.task.Task<C, I, O>);\ndescriptor: (Lio/orkestra/domain/task/Task;)Lio/orkestra/domain/composition/Compositions$ParallelGroup;",
+          "public io.orkestra.domain.composition.Compositions$ParallelGroup();\ndescriptor: ()V",
+          "public io.orkestra.domain.composition.Compositions$ParallelGroup<C, I> concurrently(int);\ndescriptor: (I)Lio/orkestra/domain/composition/Compositions$ParallelGroup;",
+          "public io.orkestra.domain.composition.Compositions$ParallelGroup<C, I> onFailure(io.orkestra.domain.task.FailureHandler<C>);\ndescriptor: (Lio/orkestra/domain/task/FailureHandler;)Lio/orkestra/domain/composition/Compositions$ParallelGroup;",
+          "public io.orkestra.domain.composition.Compositions$ParallelGroup<C, I> within(java.time.Duration);\ndescriptor: (Ljava/time/Duration;)Lio/orkestra/domain/composition/Compositions$ParallelGroup;"
+        ]
+      },
+      "io.orkestra.domain.composition.Compositions$TaskBuilder": {
+        "declaration": "public final class io.orkestra.domain.composition.Compositions$TaskBuilder<C, I, Previous, Current> extends io.orkestra.domain.composition.Compositions$Builder<C, I, Current> {",
+        "members": [
+          "public io.orkestra.domain.composition.Compositions$Builder concurrently(int);\ndescriptor: (I)Lio/orkestra/domain/composition/Compositions$Builder;",
+          "public io.orkestra.domain.composition.Compositions$Builder named(java.lang.String);\ndescriptor: (Ljava/lang/String;)Lio/orkestra/domain/composition/Compositions$Builder;",
+          "public io.orkestra.domain.composition.Compositions$Builder onFailure(io.orkestra.domain.task.FailureHandler);\ndescriptor: (Lio/orkestra/domain/task/FailureHandler;)Lio/orkestra/domain/composition/Compositions$Builder;",
+          "public io.orkestra.domain.composition.Compositions$Builder within(java.time.Duration);\ndescriptor: (Ljava/time/Duration;)Lio/orkestra/domain/composition/Compositions$Builder;",
+          "public io.orkestra.domain.composition.Compositions$TaskBuilder<C, I, Previous, Current> cache(java.util.function.Consumer<io.orkestra.domain.policy.CachePolicy$Builder<C>>);\ndescriptor: (Ljava/util/function/Consumer;)Lio/orkestra/domain/composition/Compositions$TaskBuilder;",
+          "public io.orkestra.domain.composition.Compositions$TaskBuilder<C, I, Previous, Current> compensateWith(io.orkestra.domain.task.Compensation<C, Previous, Current>);\ndescriptor: (Lio/orkestra/domain/task/Compensation;)Lio/orkestra/domain/composition/Compositions$TaskBuilder;",
+          "public io.orkestra.domain.composition.Compositions$TaskBuilder<C, I, Previous, Current> concurrently(int);\ndescriptor: (I)Lio/orkestra/domain/composition/Compositions$TaskBuilder;",
+          "public io.orkestra.domain.composition.Compositions$TaskBuilder<C, I, Previous, Current> exclusively(java.util.function.Function<C, ?>);\ndescriptor: (Ljava/util/function/Function;)Lio/orkestra/domain/composition/Compositions$TaskBuilder;",
+          "public io.orkestra.domain.composition.Compositions$TaskBuilder<C, I, Previous, Current> guard(java.lang.String);\ndescriptor: (Ljava/lang/String;)Lio/orkestra/domain/composition/Compositions$TaskBuilder;",
+          "public io.orkestra.domain.composition.Compositions$TaskBuilder<C, I, Previous, Current> isolate(java.lang.String);\ndescriptor: (Ljava/lang/String;)Lio/orkestra/domain/composition/Compositions$TaskBuilder;",
+          "public io.orkestra.domain.composition.Compositions$TaskBuilder<C, I, Previous, Current> named(java.lang.String);\ndescriptor: (Ljava/lang/String;)Lio/orkestra/domain/composition/Compositions$TaskBuilder;",
+          "public io.orkestra.domain.composition.Compositions$TaskBuilder<C, I, Previous, Current> onFailure(io.orkestra.domain.task.FailureHandler<C>);\ndescriptor: (Lio/orkestra/domain/task/FailureHandler;)Lio/orkestra/domain/composition/Compositions$TaskBuilder;",
+          "public io.orkestra.domain.composition.Compositions$TaskBuilder<C, I, Previous, Current> retry(java.util.function.Consumer<io.orkestra.domain.policy.RetryPolicy$Builder>);\ndescriptor: (Ljava/util/function/Consumer;)Lio/orkestra/domain/composition/Compositions$TaskBuilder;",
+          "public io.orkestra.domain.composition.Compositions$TaskBuilder<C, I, Previous, Current> within(java.time.Duration);\ndescriptor: (Ljava/time/Duration;)Lio/orkestra/domain/composition/Compositions$TaskBuilder;"
+        ]
+      },
+      "io.orkestra.domain.composition.Join": {
+        "declaration": "public interface io.orkestra.domain.composition.Join<C, O> {",
+        "members": [
+          "public abstract O combine(C, io.orkestra.domain.composition.Results) throws java.lang.Exception;\ndescriptor: (Ljava/lang/Object;Lio/orkestra/domain/composition/Results;)Ljava/lang/Object;"
+        ]
+      },
+      "io.orkestra.domain.composition.Results": {
+        "declaration": "public final class io.orkestra.domain.composition.Results {",
+        "members": [
+          "public <C, I, O> O get(io.orkestra.domain.composition.TaskRef<C, I, O>);\ndescriptor: (Lio/orkestra/domain/composition/TaskRef;)Ljava/lang/Object;"
+        ]
+      },
+      "io.orkestra.domain.composition.Situation": {
+        "declaration": "public final class io.orkestra.domain.composition.Situation<C, I, O> {",
+        "members": [
+          "public <V> io.orkestra.domain.composition.Situation<C, I, O>.Values<V> basedOn(io.orkestra.domain.task.Task<C, I, V>);\ndescriptor: (Lio/orkestra/domain/task/Task;)Lio/orkestra/domain/composition/Situation$Values;",
+          "public <V> io.orkestra.domain.composition.Situation<C, I, O>.Values<V> basedOn(java.util.function.Function<I, V>);\ndescriptor: (Ljava/util/function/Function;)Lio/orkestra/domain/composition/Situation$Values;",
+          "public io.orkestra.domain.composition.Situation();\ndescriptor: ()V",
+          "public io.orkestra.domain.composition.Situation<C, I, O> otherwise(io.orkestra.domain.composition.Composition<C, I, O>);\ndescriptor: (Lio/orkestra/domain/composition/Composition;)Lio/orkestra/domain/composition/Situation;",
+          "public io.orkestra.domain.composition.Situation<C, I, O> otherwise(io.orkestra.domain.composition.TaskRef<C, I, O>);\ndescriptor: (Lio/orkestra/domain/composition/TaskRef;)Lio/orkestra/domain/composition/Situation;",
+          "public io.orkestra.domain.composition.Situation<C, I, O> otherwise(io.orkestra.domain.task.Task<C, I, O>);\ndescriptor: (Lio/orkestra/domain/task/Task;)Lio/orkestra/domain/composition/Situation;",
+          "public io.orkestra.domain.composition.Situation<C, I, O>.When when(io.orkestra.domain.task.Condition<C, I>);\ndescriptor: (Lio/orkestra/domain/task/Condition;)Lio/orkestra/domain/composition/Situation$When;"
+        ]
+      },
+      "io.orkestra.domain.composition.Situation$Values": {
+        "declaration": "public final class io.orkestra.domain.composition.Situation$Values<V> {",
+        "members": [
+          "public io.orkestra.domain.composition.Situation<C, I, O> otherwise(io.orkestra.domain.composition.Composition<C, I, O>);\ndescriptor: (Lio/orkestra/domain/composition/Composition;)Lio/orkestra/domain/composition/Situation;",
+          "public io.orkestra.domain.composition.Situation<C, I, O> otherwise(io.orkestra.domain.composition.TaskRef<C, I, O>);\ndescriptor: (Lio/orkestra/domain/composition/TaskRef;)Lio/orkestra/domain/composition/Situation;",
+          "public io.orkestra.domain.composition.Situation<C, I, O> otherwise(io.orkestra.domain.task.Task<C, I, O>);\ndescriptor: (Lio/orkestra/domain/task/Task;)Lio/orkestra/domain/composition/Situation;",
+          "public io.orkestra.domain.composition.Situation<C, I, O>.Values<V>.Match is(V);\ndescriptor: (Ljava/lang/Object;)Lio/orkestra/domain/composition/Situation$Values$Match;"
+        ]
+      },
+      "io.orkestra.domain.composition.Situation$Values$Match": {
+        "declaration": "public final class io.orkestra.domain.composition.Situation$Values$Match {",
+        "members": [
+          "public io.orkestra.domain.composition.Situation<C, I, O>.Values<V> then(io.orkestra.domain.composition.Composition<C, I, O>);\ndescriptor: (Lio/orkestra/domain/composition/Composition;)Lio/orkestra/domain/composition/Situation$Values;",
+          "public io.orkestra.domain.composition.Situation<C, I, O>.Values<V> then(io.orkestra.domain.composition.TaskRef<C, I, O>);\ndescriptor: (Lio/orkestra/domain/composition/TaskRef;)Lio/orkestra/domain/composition/Situation$Values;",
+          "public io.orkestra.domain.composition.Situation<C, I, O>.Values<V> then(io.orkestra.domain.task.Task<C, I, O>);\ndescriptor: (Lio/orkestra/domain/task/Task;)Lio/orkestra/domain/composition/Situation$Values;"
+        ]
+      },
+      "io.orkestra.domain.composition.Situation$When": {
+        "declaration": "public final class io.orkestra.domain.composition.Situation$When {",
+        "members": [
+          "public io.orkestra.domain.composition.Situation<C, I, O> then(io.orkestra.domain.composition.Composition<C, I, O>);\ndescriptor: (Lio/orkestra/domain/composition/Composition;)Lio/orkestra/domain/composition/Situation;",
+          "public io.orkestra.domain.composition.Situation<C, I, O> then(io.orkestra.domain.composition.TaskRef<C, I, O>);\ndescriptor: (Lio/orkestra/domain/composition/TaskRef;)Lio/orkestra/domain/composition/Situation;",
+          "public io.orkestra.domain.composition.Situation<C, I, O> then(io.orkestra.domain.task.Task<C, I, O>);\ndescriptor: (Lio/orkestra/domain/task/Task;)Lio/orkestra/domain/composition/Situation;"
+        ]
+      },
+      "io.orkestra.domain.composition.TaskRef": {
+        "declaration": "public final class io.orkestra.domain.composition.TaskRef<C, I, O> {",
+        "members": [
+          "public io.orkestra.domain.composition.TaskRef<C, I, O> cache(java.util.function.Consumer<io.orkestra.domain.policy.CachePolicy$Builder<C>>);\ndescriptor: (Ljava/util/function/Consumer;)Lio/orkestra/domain/composition/TaskRef;",
+          "public io.orkestra.domain.composition.TaskRef<C, I, O> compensateWith(io.orkestra.domain.task.Compensation<C, I, O>);\ndescriptor: (Lio/orkestra/domain/task/Compensation;)Lio/orkestra/domain/composition/TaskRef;",
+          "public io.orkestra.domain.composition.TaskRef<C, I, O> concurrently(int);\ndescriptor: (I)Lio/orkestra/domain/composition/TaskRef;",
+          "public io.orkestra.domain.composition.TaskRef<C, I, O> exclusively(java.util.function.Function<C, ?>);\ndescriptor: (Ljava/util/function/Function;)Lio/orkestra/domain/composition/TaskRef;",
+          "public io.orkestra.domain.composition.TaskRef<C, I, O> guard(java.lang.String);\ndescriptor: (Ljava/lang/String;)Lio/orkestra/domain/composition/TaskRef;",
+          "public io.orkestra.domain.composition.TaskRef<C, I, O> isolate(java.lang.String);\ndescriptor: (Ljava/lang/String;)Lio/orkestra/domain/composition/TaskRef;",
+          "public io.orkestra.domain.composition.TaskRef<C, I, O> named(java.lang.String);\ndescriptor: (Ljava/lang/String;)Lio/orkestra/domain/composition/TaskRef;",
+          "public io.orkestra.domain.composition.TaskRef<C, I, O> onFailure(io.orkestra.domain.task.FailureHandler<C>);\ndescriptor: (Lio/orkestra/domain/task/FailureHandler;)Lio/orkestra/domain/composition/TaskRef;",
+          "public io.orkestra.domain.composition.TaskRef<C, I, O> retry(java.util.function.Consumer<io.orkestra.domain.policy.RetryPolicy$Builder>);\ndescriptor: (Ljava/util/function/Consumer;)Lio/orkestra/domain/composition/TaskRef;",
+          "public io.orkestra.domain.composition.TaskRef<C, I, O> within(java.time.Duration);\ndescriptor: (Ljava/time/Duration;)Lio/orkestra/domain/composition/TaskRef;",
+          "public static <C, I, O> io.orkestra.domain.composition.TaskRef<C, I, O> of(io.orkestra.domain.composition.Composition<C, I, O>);\ndescriptor: (Lio/orkestra/domain/composition/Composition;)Lio/orkestra/domain/composition/TaskRef;",
+          "public static <C, I, O> io.orkestra.domain.composition.TaskRef<C, I, O> of(io.orkestra.domain.task.Task<C, I, O>);\ndescriptor: (Lio/orkestra/domain/task/Task;)Lio/orkestra/domain/composition/TaskRef;"
+        ]
+      },
+      "io.orkestra.domain.exception.CircuitOpenException": {
+        "declaration": "public final class io.orkestra.domain.exception.CircuitOpenException extends java.lang.Exception {",
+        "members": [
+          "public io.orkestra.domain.exception.CircuitOpenException(java.lang.String);\ndescriptor: (Ljava/lang/String;)V"
+        ]
+      },
+      "io.orkestra.domain.exception.ExecutionFailureException": {
+        "declaration": "public final class io.orkestra.domain.exception.ExecutionFailureException extends java.lang.Exception {",
+        "members": [
+          "public io.orkestra.domain.exception.ExecutionFailureException(java.lang.Throwable, io.orkestra.domain.execution.FailureDetails);\ndescriptor: (Ljava/lang/Throwable;Lio/orkestra/domain/execution/FailureDetails;)V",
+          "public io.orkestra.domain.execution.FailureDetails details();\ndescriptor: ()Lio/orkestra/domain/execution/FailureDetails;"
+        ]
+      },
+      "io.orkestra.domain.exception.RequirementException": {
+        "declaration": "public final class io.orkestra.domain.exception.RequirementException extends java.lang.Exception {",
+        "members": [
+          "public io.orkestra.domain.exception.RequirementException();\ndescriptor: ()V"
+        ]
+      },
+      "io.orkestra.domain.exception.ShutdownException": {
+        "declaration": "public final class io.orkestra.domain.exception.ShutdownException extends java.lang.IllegalStateException {",
+        "members": [
+          "public io.orkestra.domain.exception.ShutdownException(java.lang.String);\ndescriptor: (Ljava/lang/String;)V"
+        ]
+      },
+      "io.orkestra.domain.execution.Execution": {
+        "declaration": "public final class io.orkestra.domain.execution.Execution<O> extends java.lang.Record {",
+        "members": [
+          "public O output();\ndescriptor: ()Ljava/lang/Object;",
+          "public final boolean equals(java.lang.Object);\ndescriptor: (Ljava/lang/Object;)Z",
+          "public final int hashCode();\ndescriptor: ()I",
+          "public final java.lang.String toString();\ndescriptor: ()Ljava/lang/String;",
+          "public io.orkestra.domain.execution.Execution(java.lang.String, java.time.Instant, java.time.Instant, java.time.Duration, O);\ndescriptor: (Ljava/lang/String;Ljava/time/Instant;Ljava/time/Instant;Ljava/time/Duration;Ljava/lang/Object;)V",
+          "public java.lang.String id();\ndescriptor: ()Ljava/lang/String;",
+          "public java.time.Duration duration();\ndescriptor: ()Ljava/time/Duration;",
+          "public java.time.Instant completedAt();\ndescriptor: ()Ljava/time/Instant;",
+          "public java.time.Instant startedAt();\ndescriptor: ()Ljava/time/Instant;"
+        ]
+      },
+      "io.orkestra.domain.execution.ExecutionOptions": {
+        "declaration": "public final class io.orkestra.domain.execution.ExecutionOptions extends java.lang.Record {",
+        "members": [
+          "public final boolean equals(java.lang.Object);\ndescriptor: (Ljava/lang/Object;)Z",
+          "public final int hashCode();\ndescriptor: ()I",
+          "public final java.lang.String toString();\ndescriptor: ()Ljava/lang/String;",
+          "public io.orkestra.domain.execution.ExecutionOptions(java.lang.String, java.util.Map<java.lang.String, java.lang.String>);\ndescriptor: (Ljava/lang/String;Ljava/util/Map;)V",
+          "public java.lang.String correlationId();\ndescriptor: ()Ljava/lang/String;",
+          "public java.util.Map<java.lang.String, java.lang.String> attributes();\ndescriptor: ()Ljava/util/Map;",
+          "public static io.orkestra.domain.execution.ExecutionOptions defaults();\ndescriptor: ()Lio/orkestra/domain/execution/ExecutionOptions;"
+        ]
+      },
+      "io.orkestra.domain.execution.FailureDetails": {
+        "declaration": "public final class io.orkestra.domain.execution.FailureDetails extends java.lang.Record {",
+        "members": [
+          "public boolean compensationFailed();\ndescriptor: ()Z",
+          "public boolean workPending();\ndescriptor: ()Z",
+          "public final boolean equals(java.lang.Object);\ndescriptor: (Ljava/lang/Object;)Z",
+          "public final int hashCode();\ndescriptor: ()I",
+          "public final java.lang.String toString();\ndescriptor: ()Ljava/lang/String;",
+          "public io.orkestra.domain.execution.FailureDetails(java.lang.String, io.orkestra.domain.execution.FailureKind, boolean, boolean);\ndescriptor: (Ljava/lang/String;Lio/orkestra/domain/execution/FailureKind;ZZ)V",
+          "public io.orkestra.domain.execution.FailureDetails(java.lang.String, io.orkestra.domain.execution.FailureKind, boolean, boolean, java.util.List<java.lang.Throwable>);\ndescriptor: (Ljava/lang/String;Lio/orkestra/domain/execution/FailureKind;ZZLjava/util/List;)V",
+          "public io.orkestra.domain.execution.FailureKind kind();\ndescriptor: ()Lio/orkestra/domain/execution/FailureKind;",
+          "public java.lang.String executionId();\ndescriptor: ()Ljava/lang/String;",
+          "public java.util.List<java.lang.Throwable> compensationErrors();\ndescriptor: ()Ljava/util/List;"
+        ]
+      },
+      "io.orkestra.domain.execution.FailureKind": {
+        "declaration": "public final class io.orkestra.domain.execution.FailureKind extends java.lang.Enum<io.orkestra.domain.execution.FailureKind> {",
+        "members": [
+          "public static final io.orkestra.domain.execution.FailureKind CANCELLED;\ndescriptor: Lio/orkestra/domain/execution/FailureKind;",
+          "public static final io.orkestra.domain.execution.FailureKind SHUTDOWN;\ndescriptor: Lio/orkestra/domain/execution/FailureKind;",
+          "public static final io.orkestra.domain.execution.FailureKind TASK_FAILED;\ndescriptor: Lio/orkestra/domain/execution/FailureKind;",
+          "public static final io.orkestra.domain.execution.FailureKind TIMEOUT;\ndescriptor: Lio/orkestra/domain/execution/FailureKind;",
+          "public static io.orkestra.domain.execution.FailureKind valueOf(java.lang.String);\ndescriptor: (Ljava/lang/String;)Lio/orkestra/domain/execution/FailureKind;",
+          "public static io.orkestra.domain.execution.FailureKind[] values();\ndescriptor: ()[Lio/orkestra/domain/execution/FailureKind;"
+        ]
+      },
+      "io.orkestra.domain.execution.ShutdownReport": {
+        "declaration": "public final class io.orkestra.domain.execution.ShutdownReport extends java.lang.Record {",
+        "members": [
+          "public boolean complete();\ndescriptor: ()Z",
+          "public final boolean equals(java.lang.Object);\ndescriptor: (Ljava/lang/Object;)Z",
+          "public final int hashCode();\ndescriptor: ()I",
+          "public final java.lang.String toString();\ndescriptor: ()Ljava/lang/String;",
+          "public int pendingWork();\ndescriptor: ()I",
+          "public io.orkestra.domain.execution.ShutdownReport(java.util.List<java.lang.String>, int);\ndescriptor: (Ljava/util/List;I)V",
+          "public io.orkestra.domain.execution.ShutdownReport(java.util.List<java.lang.String>, int, java.util.List<java.lang.String>);\ndescriptor: (Ljava/util/List;ILjava/util/List;)V",
+          "public java.util.List<java.lang.String> pendingCompensations();\ndescriptor: ()Ljava/util/List;",
+          "public java.util.List<java.lang.String> pendingExecutions();\ndescriptor: ()Ljava/util/List;"
+        ]
+      },
+      "io.orkestra.domain.policy.CachePolicy": {
+        "declaration": "public final class io.orkestra.domain.policy.CachePolicy<C> extends java.lang.Record {",
+        "members": [
+          "public final boolean equals(java.lang.Object);\ndescriptor: (Ljava/lang/Object;)Z",
+          "public final int hashCode();\ndescriptor: ()I",
+          "public final java.lang.String toString();\ndescriptor: ()Ljava/lang/String;",
+          "public io.orkestra.domain.policy.CachePolicy(java.lang.String, java.util.function.Function<C, ?>, java.time.Duration);\ndescriptor: (Ljava/lang/String;Ljava/util/function/Function;Ljava/time/Duration;)V",
+          "public java.lang.String name();\ndescriptor: ()Ljava/lang/String;",
+          "public java.time.Duration ttl();\ndescriptor: ()Ljava/time/Duration;",
+          "public java.util.function.Function<C, ?> key();\ndescriptor: ()Ljava/util/function/Function;"
+        ]
+      },
+      "io.orkestra.domain.policy.CachePolicy$Builder": {
+        "declaration": "public final class io.orkestra.domain.policy.CachePolicy$Builder<C> {",
+        "members": [
+          "public io.orkestra.domain.policy.CachePolicy$Builder();\ndescriptor: ()V",
+          "public io.orkestra.domain.policy.CachePolicy$Builder<C> expiresAfter(java.time.Duration);\ndescriptor: (Ljava/time/Duration;)Lio/orkestra/domain/policy/CachePolicy$Builder;",
+          "public io.orkestra.domain.policy.CachePolicy$Builder<C> key(java.util.function.Function<C, ?>);\ndescriptor: (Ljava/util/function/Function;)Lio/orkestra/domain/policy/CachePolicy$Builder;",
+          "public io.orkestra.domain.policy.CachePolicy$Builder<C> named(java.lang.String);\ndescriptor: (Ljava/lang/String;)Lio/orkestra/domain/policy/CachePolicy$Builder;",
+          "public io.orkestra.domain.policy.CachePolicy<C> build();\ndescriptor: ()Lio/orkestra/domain/policy/CachePolicy;"
+        ]
+      },
+      "io.orkestra.domain.policy.RetryPolicy": {
+        "declaration": "public final class io.orkestra.domain.policy.RetryPolicy extends java.lang.Record {",
+        "members": [
+          "public final boolean equals(java.lang.Object);\ndescriptor: (Ljava/lang/Object;)Z",
+          "public final int hashCode();\ndescriptor: ()I",
+          "public final java.lang.String toString();\ndescriptor: ()Ljava/lang/String;",
+          "public int attempts();\ndescriptor: ()I",
+          "public io.orkestra.domain.policy.RetryPolicy(int, java.time.Duration, java.util.function.Predicate<java.lang.Throwable>);\ndescriptor: (ILjava/time/Duration;Ljava/util/function/Predicate;)V",
+          "public java.time.Duration delay();\ndescriptor: ()Ljava/time/Duration;",
+          "public java.util.function.Predicate<java.lang.Throwable> retryIf();\ndescriptor: ()Ljava/util/function/Predicate;"
+        ]
+      },
+      "io.orkestra.domain.policy.RetryPolicy$Builder": {
+        "declaration": "public final class io.orkestra.domain.policy.RetryPolicy$Builder {",
+        "members": [
+          "public io.orkestra.domain.policy.RetryPolicy build();\ndescriptor: ()Lio/orkestra/domain/policy/RetryPolicy;",
+          "public io.orkestra.domain.policy.RetryPolicy$Builder retryIf(java.util.function.Predicate<java.lang.Throwable>);\ndescriptor: (Ljava/util/function/Predicate;)Lio/orkestra/domain/policy/RetryPolicy$Builder;",
+          "public io.orkestra.domain.policy.RetryPolicy$Builder upTo(int);\ndescriptor: (I)Lio/orkestra/domain/policy/RetryPolicy$Builder;",
+          "public io.orkestra.domain.policy.RetryPolicy$Builder waiting(java.time.Duration);\ndescriptor: (Ljava/time/Duration;)Lio/orkestra/domain/policy/RetryPolicy$Builder;",
+          "public io.orkestra.domain.policy.RetryPolicy$Builder();\ndescriptor: ()V"
+        ]
+      },
+      "io.orkestra.domain.port.CacheStore": {
+        "declaration": "public interface io.orkestra.domain.port.CacheStore {",
+        "members": [
+          "public abstract java.util.Optional<io.orkestra.domain.port.CacheStore$Entry> get(java.lang.Object);\ndescriptor: (Ljava/lang/Object;)Ljava/util/Optional;",
+          "public abstract void invalidate(java.lang.Object);\ndescriptor: (Ljava/lang/Object;)V",
+          "public abstract void invalidateAll();\ndescriptor: ()V",
+          "public abstract void put(java.lang.Object, java.lang.Object, java.time.Duration);\ndescriptor: (Ljava/lang/Object;Ljava/lang/Object;Ljava/time/Duration;)V"
+        ]
+      },
+      "io.orkestra.domain.port.CacheStore$Entry": {
+        "declaration": "public final class io.orkestra.domain.port.CacheStore$Entry extends java.lang.Record {",
+        "members": [
+          "public final boolean equals(java.lang.Object);\ndescriptor: (Ljava/lang/Object;)Z",
+          "public final int hashCode();\ndescriptor: ()I",
+          "public final java.lang.String toString();\ndescriptor: ()Ljava/lang/String;",
+          "public io.orkestra.domain.port.CacheStore$Entry(java.lang.Object);\ndescriptor: (Ljava/lang/Object;)V",
+          "public java.lang.Object output();\ndescriptor: ()Ljava/lang/Object;"
+        ]
+      },
+      "io.orkestra.domain.port.CircuitBreaker": {
+        "declaration": "public interface io.orkestra.domain.port.CircuitBreaker {",
+        "members": [
+          "public abstract io.orkestra.domain.port.CircuitBreaker$Permit acquire() throws java.lang.Exception;\ndescriptor: ()Lio/orkestra/domain/port/CircuitBreaker$Permit;"
+        ]
+      },
+      "io.orkestra.domain.port.CircuitBreaker$Permit": {
+        "declaration": "public interface io.orkestra.domain.port.CircuitBreaker$Permit {",
+        "members": [
+          "public abstract void failure();\ndescriptor: ()V",
+          "public abstract void success();\ndescriptor: ()V"
+        ]
+      },
+      "io.orkestra.domain.port.EventListener": {
+        "declaration": "public interface io.orkestra.domain.port.EventListener {",
+        "members": [
+          "public abstract void onEvent(io.orkestra.domain.port.ExecutionEvent);\ndescriptor: (Lio/orkestra/domain/port/ExecutionEvent;)V"
+        ]
+      },
+      "io.orkestra.domain.port.ExecutionEvent": {
+        "declaration": "public final class io.orkestra.domain.port.ExecutionEvent extends java.lang.Record {",
+        "members": [
+          "public final boolean equals(java.lang.Object);\ndescriptor: (Ljava/lang/Object;)Z",
+          "public final int hashCode();\ndescriptor: ()I",
+          "public final java.lang.String toString();\ndescriptor: ()Ljava/lang/String;",
+          "public io.orkestra.domain.port.ExecutionEvent(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.time.Instant, java.time.Duration, java.lang.Throwable, java.util.Map<java.lang.String, java.lang.String>);\ndescriptor: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/time/Instant;Ljava/time/Duration;Ljava/lang/Throwable;Ljava/util/Map;)V",
+          "public java.lang.String correlationId();\ndescriptor: ()Ljava/lang/String;",
+          "public java.lang.String executionId();\ndescriptor: ()Ljava/lang/String;",
+          "public java.lang.String kind();\ndescriptor: ()Ljava/lang/String;",
+          "public java.lang.String name();\ndescriptor: ()Ljava/lang/String;",
+          "public java.lang.String parentSpanId();\ndescriptor: ()Ljava/lang/String;",
+          "public java.lang.String spanId();\ndescriptor: ()Ljava/lang/String;",
+          "public java.lang.String type();\ndescriptor: ()Ljava/lang/String;",
+          "public java.lang.Throwable failure();\ndescriptor: ()Ljava/lang/Throwable;",
+          "public java.time.Duration duration();\ndescriptor: ()Ljava/time/Duration;",
+          "public java.time.Instant at();\ndescriptor: ()Ljava/time/Instant;",
+          "public java.util.Map<java.lang.String, java.lang.String> attributes();\ndescriptor: ()Ljava/util/Map;"
+        ]
+      },
+      "io.orkestra.domain.port.HistoryStore": {
+        "declaration": "public interface io.orkestra.domain.port.HistoryStore extends io.orkestra.domain.port.EventListener {",
+        "members": [
+          "public abstract java.util.Optional<io.orkestra.domain.port.HistoryStore$History> find(java.lang.String);\ndescriptor: (Ljava/lang/String;)Ljava/util/Optional;",
+          "public abstract void markIncomplete(java.lang.String);\ndescriptor: (Ljava/lang/String;)V",
+          "public abstract void remove(java.lang.String);\ndescriptor: (Ljava/lang/String;)V"
+        ]
+      },
+      "io.orkestra.domain.port.HistoryStore$History": {
+        "declaration": "public final class io.orkestra.domain.port.HistoryStore$History extends java.lang.Record {",
+        "members": [
+          "public boolean incomplete();\ndescriptor: ()Z",
+          "public final boolean equals(java.lang.Object);\ndescriptor: (Ljava/lang/Object;)Z",
+          "public final int hashCode();\ndescriptor: ()I",
+          "public final java.lang.String toString();\ndescriptor: ()Ljava/lang/String;",
+          "public io.orkestra.domain.port.HistoryStore$History(java.lang.String, java.util.List<io.orkestra.domain.port.ExecutionEvent>, boolean);\ndescriptor: (Ljava/lang/String;Ljava/util/List;Z)V",
+          "public java.lang.String executionId();\ndescriptor: ()Ljava/lang/String;",
+          "public java.util.List<io.orkestra.domain.port.ExecutionEvent> events();\ndescriptor: ()Ljava/util/List;"
+        ]
+      },
+      "io.orkestra.domain.port.LockProvider": {
+        "declaration": "public interface io.orkestra.domain.port.LockProvider {",
+        "members": [
+          "public abstract io.orkestra.domain.port.LockProvider$Lease acquire(java.lang.Object, java.time.Duration) throws java.lang.Exception;\ndescriptor: (Ljava/lang/Object;Ljava/time/Duration;)Lio/orkestra/domain/port/LockProvider$Lease;"
+        ]
+      },
+      "io.orkestra.domain.port.LockProvider$Lease": {
+        "declaration": "public interface io.orkestra.domain.port.LockProvider$Lease extends java.lang.AutoCloseable {",
+        "members": [
+          "public abstract void close();\ndescriptor: ()V"
+        ]
+      },
+      "io.orkestra.domain.port.ResourceProvider": {
+        "declaration": "public interface io.orkestra.domain.port.ResourceProvider {",
+        "members": [
+          "public abstract io.orkestra.domain.port.CacheStore cache(int);\ndescriptor: (I)Lio/orkestra/domain/port/CacheStore;",
+          "public abstract io.orkestra.domain.port.CircuitBreaker breaker(java.lang.String, int, java.time.Duration);\ndescriptor: (Ljava/lang/String;ILjava/time/Duration;)Lio/orkestra/domain/port/CircuitBreaker;",
+          "public abstract io.orkestra.domain.port.LockProvider locks();\ndescriptor: ()Lio/orkestra/domain/port/LockProvider;"
+        ]
+      },
+      "io.orkestra.domain.task.Compensation": {
+        "declaration": "public interface io.orkestra.domain.task.Compensation<C, I, O> {",
+        "members": [
+          "public abstract void compensate(C, I, O) throws java.lang.Exception;\ndescriptor: (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V"
+        ]
+      },
+      "io.orkestra.domain.task.Condition": {
+        "declaration": "public interface io.orkestra.domain.task.Condition<C, I> {",
+        "members": [
+          "public abstract boolean test(C, I) throws java.lang.Exception;\ndescriptor: (Ljava/lang/Object;Ljava/lang/Object;)Z"
+        ]
+      },
+      "io.orkestra.domain.task.FailureHandler": {
+        "declaration": "public interface io.orkestra.domain.task.FailureHandler<C> {",
+        "members": [
+          "public abstract java.lang.Exception translate(C, java.lang.Throwable) throws java.lang.Exception;\ndescriptor: (Ljava/lang/Object;Ljava/lang/Throwable;)Ljava/lang/Exception;"
+        ]
+      },
+      "io.orkestra.domain.task.Task": {
+        "declaration": "public interface io.orkestra.domain.task.Task<C, I, O> {",
+        "members": [
+          "public abstract O execute(C, I) throws java.lang.Exception;\ndescriptor: (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"
+        ]
+      }
+    },
+    "module": [
+      "exports io.orkestra.domain.composition",
+      "exports io.orkestra.domain.exception",
+      "exports io.orkestra.domain.execution",
+      "exports io.orkestra.domain.policy",
+      "exports io.orkestra.domain.port",
+      "exports io.orkestra.domain.task",
+      "requires java.base mandated"
+    ]
+  },
+  "infrastructure": {
+    "classes": {
+      "io.orkestra.infrastructure.cache.MemoryCache": {
+        "declaration": "public final class io.orkestra.infrastructure.cache.MemoryCache implements io.orkestra.domain.port.CacheStore {",
+        "members": [
+          "public io.orkestra.infrastructure.cache.MemoryCache();\ndescriptor: ()V",
+          "public io.orkestra.infrastructure.cache.MemoryCache(int);\ndescriptor: (I)V",
+          "public synchronized int size();\ndescriptor: ()I",
+          "public synchronized java.util.Optional<io.orkestra.domain.port.CacheStore$Entry> get(java.lang.Object);\ndescriptor: (Ljava/lang/Object;)Ljava/util/Optional;",
+          "public synchronized void invalidate(java.lang.Object);\ndescriptor: (Ljava/lang/Object;)V",
+          "public synchronized void invalidateAll();\ndescriptor: ()V",
+          "public synchronized void put(java.lang.Object, java.lang.Object, java.time.Duration);\ndescriptor: (Ljava/lang/Object;Ljava/lang/Object;Ljava/time/Duration;)V"
+        ]
+      },
+      "io.orkestra.infrastructure.events.AsyncEventListener": {
+        "declaration": "public final class io.orkestra.infrastructure.events.AsyncEventListener implements io.orkestra.domain.port.EventListener,java.lang.AutoCloseable {",
+        "members": [
+          "public boolean close(java.time.Duration);\ndescriptor: (Ljava/time/Duration;)Z",
+          "public int pending();\ndescriptor: ()I",
+          "public io.orkestra.infrastructure.events.AsyncEventListener(io.orkestra.domain.port.EventListener, int, io.orkestra.infrastructure.events.AsyncEventListener$OverflowPolicy, java.util.function.Consumer<java.lang.String>);\ndescriptor: (Lio/orkestra/domain/port/EventListener;ILio/orkestra/infrastructure/events/AsyncEventListener$OverflowPolicy;Ljava/util/function/Consumer;)V",
+          "public long dropped();\ndescriptor: ()J",
+          "public long failures();\ndescriptor: ()J",
+          "public synchronized void onEvent(io.orkestra.domain.port.ExecutionEvent);\ndescriptor: (Lio/orkestra/domain/port/ExecutionEvent;)V",
+          "public void close();\ndescriptor: ()V"
+        ]
+      },
+      "io.orkestra.infrastructure.events.AsyncEventListener$OverflowPolicy": {
+        "declaration": "public final class io.orkestra.infrastructure.events.AsyncEventListener$OverflowPolicy extends java.lang.Enum<io.orkestra.infrastructure.events.AsyncEventListener$OverflowPolicy> {",
+        "members": [
+          "public static final io.orkestra.infrastructure.events.AsyncEventListener$OverflowPolicy DROP;\ndescriptor: Lio/orkestra/infrastructure/events/AsyncEventListener$OverflowPolicy;",
+          "public static final io.orkestra.infrastructure.events.AsyncEventListener$OverflowPolicy FAIL;\ndescriptor: Lio/orkestra/infrastructure/events/AsyncEventListener$OverflowPolicy;",
+          "public static io.orkestra.infrastructure.events.AsyncEventListener$OverflowPolicy valueOf(java.lang.String);\ndescriptor: (Ljava/lang/String;)Lio/orkestra/infrastructure/events/AsyncEventListener$OverflowPolicy;",
+          "public static io.orkestra.infrastructure.events.AsyncEventListener$OverflowPolicy[] values();\ndescriptor: ()[Lio/orkestra/infrastructure/events/AsyncEventListener$OverflowPolicy;"
+        ]
+      },
+      "io.orkestra.infrastructure.history.MemoryHistory": {
+        "declaration": "public final class io.orkestra.infrastructure.history.MemoryHistory implements io.orkestra.domain.port.HistoryStore {",
+        "members": [
+          "public io.orkestra.infrastructure.history.MemoryHistory(int, int, java.time.Duration);\ndescriptor: (IILjava/time/Duration;)V",
+          "public synchronized java.util.Optional<io.orkestra.domain.port.HistoryStore$History> find(java.lang.String);\ndescriptor: (Ljava/lang/String;)Ljava/util/Optional;",
+          "public synchronized void markIncomplete(java.lang.String);\ndescriptor: (Ljava/lang/String;)V",
+          "public synchronized void onEvent(io.orkestra.domain.port.ExecutionEvent);\ndescriptor: (Lio/orkestra/domain/port/ExecutionEvent;)V",
+          "public synchronized void remove(java.lang.String);\ndescriptor: (Ljava/lang/String;)V"
+        ]
+      },
+      "io.orkestra.infrastructure.lock.LocalLocks": {
+        "declaration": "public final class io.orkestra.infrastructure.lock.LocalLocks implements io.orkestra.domain.port.LockProvider {",
+        "members": [
+          "public int size();\ndescriptor: ()I",
+          "public io.orkestra.domain.port.LockProvider$Lease acquire(java.lang.Object, java.time.Duration) throws java.lang.Exception;\ndescriptor: (Ljava/lang/Object;Ljava/time/Duration;)Lio/orkestra/domain/port/LockProvider$Lease;",
+          "public io.orkestra.infrastructure.lock.LocalLocks();\ndescriptor: ()V"
+        ]
+      },
+      "io.orkestra.infrastructure.resilience.LocalCircuitBreaker": {
+        "declaration": "public final class io.orkestra.infrastructure.resilience.LocalCircuitBreaker implements io.orkestra.domain.port.CircuitBreaker {",
+        "members": [
+          "public io.orkestra.infrastructure.resilience.LocalCircuitBreaker(java.lang.String, int, java.time.Duration);\ndescriptor: (Ljava/lang/String;ILjava/time/Duration;)V",
+          "public synchronized io.orkestra.domain.port.CircuitBreaker$Permit acquire() throws io.orkestra.domain.exception.CircuitOpenException;\ndescriptor: ()Lio/orkestra/domain/port/CircuitBreaker$Permit;"
+        ]
+      },
+      "io.orkestra.infrastructure.resources.LocalResources": {
+        "declaration": "public final class io.orkestra.infrastructure.resources.LocalResources implements io.orkestra.domain.port.ResourceProvider {",
+        "members": [
+          "public io.orkestra.domain.port.CacheStore cache(int);\ndescriptor: (I)Lio/orkestra/domain/port/CacheStore;",
+          "public io.orkestra.domain.port.CircuitBreaker breaker(java.lang.String, int, java.time.Duration);\ndescriptor: (Ljava/lang/String;ILjava/time/Duration;)Lio/orkestra/domain/port/CircuitBreaker;",
+          "public io.orkestra.domain.port.LockProvider locks();\ndescriptor: ()Lio/orkestra/domain/port/LockProvider;",
+          "public io.orkestra.infrastructure.resources.LocalResources();\ndescriptor: ()V"
+        ]
+      }
+    },
+    "module": [
+      "exports io.orkestra.infrastructure.cache",
+      "exports io.orkestra.infrastructure.events",
+      "exports io.orkestra.infrastructure.history",
+      "exports io.orkestra.infrastructure.lock",
+      "exports io.orkestra.infrastructure.resilience",
+      "exports io.orkestra.infrastructure.resources",
+      "provides io.orkestra.domain.port.ResourceProvider with io.orkestra.infrastructure.resources.LocalResources",
+      "requires io.orkestra.application transitive",
+      "requires io.orkestra.domain transitive",
+      "requires java.base mandated"
+    ]
+  },
+  "infrastructure/adapters/logging": {
+    "classes": {
+      "io.orkestra.infrastructure.logging.StructuredLogging": {
+        "declaration": "public final class io.orkestra.infrastructure.logging.StructuredLogging implements io.orkestra.domain.port.EventListener {",
+        "members": [
+          "public io.orkestra.infrastructure.logging.StructuredLogging(java.util.logging.Logger);\ndescriptor: (Ljava/util/logging/Logger;)V",
+          "public void onEvent(io.orkestra.domain.port.ExecutionEvent);\ndescriptor: (Lio/orkestra/domain/port/ExecutionEvent;)V"
+        ]
+      }
+    },
+    "module": [
+      "exports io.orkestra.infrastructure.logging",
+      "requires io.orkestra.domain transitive",
+      "requires java.base mandated",
+      "requires java.logging transitive"
+    ]
+  },
+  "infrastructure/adapters/opentelemetry": {
+    "classes": {
+      "io.orkestra.infrastructure.opentelemetry.OpenTelemetryEvents": {
+        "declaration": "public final class io.orkestra.infrastructure.opentelemetry.OpenTelemetryEvents implements io.orkestra.domain.port.EventListener,java.lang.AutoCloseable {",
+        "members": [
+          "public io.orkestra.infrastructure.opentelemetry.OpenTelemetryEvents(io.opentelemetry.api.trace.Tracer);\ndescriptor: (Lio/opentelemetry/api/trace/Tracer;)V",
+          "public io.orkestra.infrastructure.opentelemetry.OpenTelemetryEvents(io.opentelemetry.api.trace.Tracer, java.util.function.Function<io.orkestra.domain.port.ExecutionEvent, io.opentelemetry.context.Context>, int);\ndescriptor: (Lio/opentelemetry/api/trace/Tracer;Ljava/util/function/Function;I)V",
+          "public synchronized int activeSpans();\ndescriptor: ()I",
+          "public synchronized void close();\ndescriptor: ()V",
+          "public synchronized void onEvent(io.orkestra.domain.port.ExecutionEvent);\ndescriptor: (Lio/orkestra/domain/port/ExecutionEvent;)V"
+        ]
+      }
+    },
+    "module": [
+      "exports io.orkestra.infrastructure.opentelemetry",
+      "requires io.opentelemetry.api transitive",
+      "requires io.opentelemetry.context transitive",
+      "requires io.orkestra.domain transitive",
+      "requires java.base mandated"
+    ]
+  },
+  "infrastructure/adapters/spring": {
+    "classes": {
+      "io.orkestra.infrastructure.spring.OrkestraLifecycle": {
+        "declaration": "public final class io.orkestra.infrastructure.spring.OrkestraLifecycle implements org.springframework.context.SmartLifecycle {",
+        "members": [
+          "public boolean isAutoStartup();\ndescriptor: ()Z",
+          "public boolean isRunning();\ndescriptor: ()Z",
+          "public int getPhase();\ndescriptor: ()I",
+          "public io.orkestra.infrastructure.spring.OrkestraLifecycle(io.orkestra.application.Orchestrator, java.time.Duration);\ndescriptor: (Lio/orkestra/application/Orchestrator;Ljava/time/Duration;)V",
+          "public io.orkestra.infrastructure.spring.OrkestraLifecycle(io.orkestra.application.Orchestrator, java.time.Duration, int);\ndescriptor: (Lio/orkestra/application/Orchestrator;Ljava/time/Duration;I)V",
+          "public java.util.Optional<io.orkestra.domain.execution.ShutdownReport> report();\ndescriptor: ()Ljava/util/Optional;",
+          "public synchronized void start();\ndescriptor: ()V",
+          "public synchronized void stop();\ndescriptor: ()V",
+          "public void stop(java.lang.Runnable);\ndescriptor: (Ljava/lang/Runnable;)V"
+        ]
+      }
+    },
+    "module": [
+      "exports io.orkestra.infrastructure.spring",
+      "requires io.orkestra.application transitive",
+      "requires io.orkestra.infrastructure transitive",
+      "requires java.base mandated",
+      "requires spring.context transitive"
+    ]
+  }
+}
