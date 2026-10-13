@@ -191,14 +191,14 @@ flowchart LR
     J --> O[Totals: 14 e 21]
 ```
 
+Cada tarefa implementa `Task<Void, Integer, Integer>` em seu próprio arquivo:
+[DoubleValueTask.java](examples/parallel/DoubleValueTask.java) e
+[TripleValueTask.java](examples/parallel/TripleValueTask.java).
+O resultado é o record [Totals](examples/parallel/Totals.java).
+
 ```java
-import io.orkestra.core.composition.Compositions;
-import io.orkestra.core.composition.TaskRef;
-
-record Totals(int doubled, int tripled) {}
-
-var doubleValue = TaskRef.<Void, Integer, Integer>of((context, input) -> input * 2);
-var tripleValue = TaskRef.<Void, Integer, Integer>of((context, input) -> input * 3);
+var doubleValue = TaskRef.of(new DoubleValueTask());
+var tripleValue = TaskRef.of(new TripleValueTask());
 
 var composition = Compositions.<Void, Integer>create()
         .parallel(group -> group.concurrently(2)
@@ -209,7 +209,8 @@ var composition = Compositions.<Void, Integer>create()
         .build();
 ```
 
-Use `orchestrator.perform(composition, null, 7)` para obter os totais do diagrama.
+Com entrada `7`, o resultado é `Totals[doubled=14, tripled=21]`.
+Veja o [exemplo executável](examples/parallel/ParallelExample.java).
 
 ### Compensação de efeitos
 
@@ -298,6 +299,7 @@ scripts/run-examples.sh
 
 | Exemplo | Demonstração |
 | --- | --- |
+| [ParallelExample.java](examples/parallel/ParallelExample.java) | Tarefas em arquivos separados e junção de resultados tipados |
 | [PlaceOrder.java](examples/PlaceOrder.java) | Encadeamento tipado, composição reutilizada e tradução de falhas |
 | [WorkflowExample.java](examples/WorkflowExample.java) | Paralelismo, decisões, retry, cache, histórico e compensação |
 
