@@ -4,28 +4,52 @@
 
 **Componha tarefas. Controle a execução. Preserve os tipos.**
 
-Biblioteca Java para coordenar fluxos dentro da sua aplicação.
+Orquestração de tarefas em Java 25, dentro da sua aplicação.
 
+[![Build](https://github.com/Orkestra-java/Orkestra/actions/workflows/build.yml/badge.svg)](https://github.com/Orkestra-java/Orkestra/actions/workflows/build.yml)
 ![Java 25](https://img.shields.io/badge/Java-25-ED8B00?style=flat-square)
 ![Maven](https://img.shields.io/badge/build-Maven-1565C0?style=flat-square)
 ![Version](https://img.shields.io/badge/version-0.1.0--SNAPSHOT-607D8B?style=flat-square)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache--2.0-4CAF50?style=flat-square)](LICENSE)
 
-[Começar](#começar) · [Recursos](#recursos) · [Exemplos](#exemplos) · [Desenvolvimento](#desenvolvimento) · [Documentação](#documentação)
+[Quando usar](#quando-usar) · [Começar](#começar) · [Recursos](#recursos) · [Exemplos](#exemplos) · [Desenvolvimento](#desenvolvimento) · [Documentação](#documentação)
 
 </div>
 
-Orkestra transforma tarefas Java em **composições tipadas, imutáveis e reutilizáveis**.
-Cada etapa recebe a saída da anterior; o executor coordena paralelismo, limites,
-retry, cache e compensação. Você define as operações de negócio e controla o estado
-da aplicação.
+Orkestra é uma biblioteca para compor e executar tarefas Java com **sequência,
+paralelismo, políticas de execução e compensação**. Um fluxo pode validar um pedido,
+consultar serviços em paralelo, reservar estoque e cobrar um pagamento, mantendo
+os tipos de entrada e saída em cada etapa.
 
-O núcleo é um único artefato, **`io.orkestra:orkestra-core`**, sem dependências
-externas em produção. Requer **JDK 25** e funciona no classpath ou com JPMS.
+Você define as operações de negócio; Orkestra coordena sua execução. As composições
+são imutáveis e reutilizáveis, e o núcleo funciona com `new Orchestrator()`, usando
+recursos locais fornecidos pela própria biblioteca.
 
-> **Estado do projeto:** versão inicial `0.1.0-SNAPSHOT`, ainda sem publicação
-> no Maven Central. A API pode mudar antes da primeira release. Para experimentar,
-> instale o artefato no seu repositório Maven local.
+| | |
+| --- | --- |
+| Runtime | Java 25, com virtual threads |
+| Núcleo | `io.orkestra:orkestra-core`, sem dependências externas em produção |
+| Uso | Classpath ou módulo JPMS `io.orkestra.core` |
+| Integrações | Logging, OpenTelemetry e Spring em artefatos opcionais |
+
+> **Versão inicial:** `0.1.0-SNAPSHOT`. A API pode mudar antes da primeira release.
+> Para usar agora, compile este repositório e instale os artefatos no Maven local.
+> O roteiro de publicação de artefatos está no [guia de release](docs/RELEASE.md).
+
+## Quando usar
+
+- **Fluxos de serviço:** encadear validação, enriquecimento e operações de negócio
+  com entradas e saídas verificadas pelo compilador.
+- **Consultas independentes:** executar tarefas em paralelo e reunir os resultados
+  em uma saída tipada.
+- **Operações com efeitos externos:** registrar ações explícitas de compensação,
+  como liberar uma reserva ou estornar um pagamento após uma falha.
+- **Controle de execução:** aplicar prazos, limites de concorrência, retry, cache
+  e diagnóstico às tarefas de um fluxo.
+
+A execução acontece dentro do processo da aplicação. O estado de negócio e a
+persistência pertencem ao consumidor. Fluxos que precisam sobreviver a reinícios,
+replay ou coordenação distribuída exigem infraestrutura além deste núcleo.
 
 ## Como funciona
 
@@ -48,12 +72,15 @@ Falhas são lançadas como exceções, com diagnóstico recuperável por `Failur
 
 ### 1. Instale a biblioteca localmente
 
-Com JDK 25, na raiz deste checkout:
+Com JDK 25 instalado:
 
 ```sh
-cd java
+git clone https://github.com/Orkestra-java/Orkestra.git
+cd Orkestra/java
 ./mvnw install
 ```
+
+Se você já clonou o repositório, execute `./mvnw install` no diretório `java/`.
 
 No Windows, use `mvnw.cmd`. O wrapper fornece Maven 3.9.16; o primeiro build
 precisa de rede para baixar Maven, plugins e dependências de teste.
@@ -86,20 +113,34 @@ integrações opcionais em artefatos separados.
 
 ### 3. Execute sua primeira composição
 
+Salve o código abaixo como `Main.java` no seu projeto consumidor:
+
 ```java
 import io.orkestra.core.Orchestrator;
 import io.orkestra.core.composition.Compositions;
 
 public class Main {
+    record Order(int quantity) {}
+    record ValidatedOrder(int quantity) {}
+    record Receipt(String customer, int quantity) {}
+    record Context(String customer) {}
+
     public static void main(String[] args) throws Exception {
-        var composition = Compositions.<Void, Integer>create()
-                .named("calculate-total")
-                .perform((context, input) -> input * 2)
-                .perform((context, total) -> "Total: " + total)
+        var placeOrder = Compositions.<Context, Order>create()
+                .named("place-order")
+                .perform((context, order) -> {
+                    if (order.quantity() <= 0) {
+                        throw new IllegalArgumentException("Quantity must be positive");
+                    }
+                    return new ValidatedOrder(order.quantity());
+                })
+                .perform((context, order) ->
+                        new Receipt(context.customer(), order.quantity()))
                 .build();
 
         try (var orchestrator = new Orchestrator()) {
-            var execution = orchestrator.perform(composition, null, 7);
+            var execution = orchestrator.perform(
+                    placeOrder, new Context("customer-123"), new Order(2));
             System.out.println(execution.output());
         }
     }
@@ -107,12 +148,18 @@ public class Main {
 ```
 
 ```text
-Total: 14
+Receipt[customer=customer-123, quantity=2]
 ```
 
-Neste exemplo, a primeira tarefa produz `Integer` e a seguinte produz `String`.
-O tipo da saída acompanha a composição. `Void` indica que esse fluxo não precisa
-de contexto. O executor cria seus recursos locais automaticamente.
+O fluxo recebe `Order`, produz `ValidatedOrder` e termina com `Receipt`. Cada
+`perform` recebe a saída da etapa anterior, enquanto o mesmo `Context` acompanha
+as tarefas. O exemplo valida o pedido e cria um recibo em memória; operações de
+estoque e pagamento podem ser fornecidas como tarefas pela aplicação.
+
+`orchestrator.perform(...)` aguarda o resultado e retorna `Execution<Receipt>`.
+O `try` fecha os recursos do executor ao sair. Veja também o
+[consumidor completo](examples/PlaceOrder.java), com composição reutilizada e
+tratamento de falhas.
 
 ## Recursos
 
@@ -210,6 +257,17 @@ A [especificação](docs/specification.md) detalha os contratos e limites.
 
 ## Integrações opcionais
 
+Para instalar também os adaptadores no seu Maven local:
+
+```sh
+cd java
+./mvnw -Padapters install
+```
+
+Adicione o artefato desejado ao `pom.xml` do consumidor com a versão
+`0.1.0-SNAPSHOT`. O núcleo pode ser usado sozinho.
+
+
 ```mermaid
 flowchart TB
     A[Aplicação Java] --> C[orkestra-core]
@@ -250,12 +308,12 @@ scripts/run-examples.sh
 Confirmed: customer-123
 Actions: [reserve, charge, confirm]
 Prices: [2, 4, 6]
-History events: 43
 Failure: TASK_FAILED
 Compensated: [reserve, charge, refund, release-reservation]
 ```
 
-O exemplo executa um pedido aceito e outro cuja confirmação falha.
+O exemplo também imprime a quantidade de eventos no histórico.
+Ele executa um pedido aceito e outro cuja confirmação falha.
 A segunda execução verifica a ordem das ações de compensação.
 
 </details>
@@ -273,9 +331,9 @@ Todos os comandos abaixo partem da raiz do repositório:
 | `python3 scripts/check-api.py` | Compara as assinaturas do núcleo com o baseline |
 | `python3 scripts/check-api.py --all` | Verifica também os adaptadores, após seu build |
 
-A validação local registrou **74 testes do núcleo** e **77 com os adaptadores**,
-sem falhas. Consulte [validação](docs/VALIDATION.md) para as verificações executadas
-e os limites de validação de CI, release e benchmarks.
+Consulte [validação](docs/VALIDATION.md) para as evidências locais de testes e
+empacotamento, e [GitHub Actions](https://github.com/Orkestra-java/Orkestra/actions)
+para os resultados de CI de cada commit.
 
 <details>
 <summary>Estrutura do repositório</summary>
@@ -302,6 +360,7 @@ Veja a [organização da biblioteca](docs/ARCHITECTURE.md).
 
 ## Documentação
 
+- [Índice da documentação](docs/README.md) — ponto de entrada para guias e decisões.
 - [Especificação](docs/specification.md) — semântica da API e contratos de execução.
 - [Integrações](docs/EXTENSIONS.md) — provedores, eventos, telemetria e Spring.
 - [Validação](docs/VALIDATION.md) — evidências de testes e empacotamento.
